@@ -1,0 +1,114 @@
+<Container version="2">
+  <Name>feedbard</Name>
+  <Repository>ghcr.io/theviki20110/feedbard:latest</Repository>
+  <Registry>https://ghcr.io/theviki20110/feedbard</Registry>
+  <Network>bridge</Network>
+
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+
+  <Icon>https://raw.githubusercontent.com/Theviki20110/unraid-community-template/main/icon.svg</Icon>
+
+  <!-- Headless: the pipeline runs on a timer, there is no web interface. -->
+
+  <Overview>
+    feedbard turns the blogs you follow into an audiobook library.
+
+    It polls a list of RSS/Atom feeds, fetches each new post's full article
+    (Substack API, the feed's own content, or Readability over the page,
+    whichever works), translates it into the language you pick, describes the
+    figures and charts so they are narrated instead of skipped, renders the
+    result to speech, and publishes it as an Audiobookshelf *book* library:
+    one folder per article, per-article cover art, ID3-tagged MP3.
+
+    There is no WebUI. The container runs the pipeline every
+    CRON_INTERVAL_SECONDS (default 3 hours) and logs what it did. Posts
+    already processed are recorded in a SQLite database under the data path,
+    so a restart never re-narrates the same article.
+
+    Two paths, kept apart on purpose:
+      /app/data    the pipeline's own state - database, rendered episodes,
+                   covers, and resumable per-block scratch files.
+      /app/library the published tree. Point Audiobookshelf at this one as a
+                   Book library; it never sees scratch files.
+
+    You supply the model backends. LLM: Anthropic API, AWS Bedrock, or a local
+    Ollama server. Text-to-speech: an HTTP TTS service or
+    Amazon Polly. The feed list is a newline-separated text file you mount in.
+  </Overview>
+
+  <Support>https://github.com/Theviki20110/feedbard/issues</Support>
+  <Project>https://github.com/Theviki20110/feedbard</Project>
+
+  <TemplateURL>https://raw.githubusercontent.com/Theviki20110/unraid-community-template/main/templates/feedbard.xml</TemplateURL>
+  <ReadMe>https://raw.githubusercontent.com/Theviki20110/feedbard/main/README.md</ReadMe>
+
+  <Category>MediaApp:Books Tools:Utilities</Category>
+
+  <ExtraSearchTerms>rss atom feed podcast tts text-to-speech audiobookshelf narration translation llm</ExtraSearchTerms>
+
+  <Requires>
+    Internet access. An LLM backend (Anthropic API key, AWS Bedrock
+    credentials, or an Ollama server) and a TTS backend (HTTP TTS service,
+    SageMaker endpoint, or Amazon Polly). An Audiobookshelf install pointed at
+    the library path is recommended but not required.
+  </Requires>
+
+  <Changes>
+### 0.1.0
+- Initial Unraid release.
+  </Changes>
+
+  <Date>2026-08-16</Date>
+
+  <MinVer>6.1</MinVer>
+  <MaxVer>7.3</MaxVer>
+
+  <License>MIT</License>
+
+  <!-- ===================== Paths ===================== -->
+
+  <Config Name="Data" Target="/app/data" Default="/mnt/user/appdata/feedbard" Mode="rw" Description="Pipeline state: processed-posts database, rendered episodes, cover art, and resumable scratch shards. The database here is the only state that cannot be rebuilt." Type="Path" Display="always" Required="true" Mask="false"/>
+  <Config Name="Library" Target="/app/library" Default="/mnt/user/media/audiobooks/feedbard" Mode="rw" Description="Published Audiobookshelf book library ({Author}/{Title}/). Add this folder in Audiobookshelf as a library of type Book." Type="Path" Display="always" Required="true" Mask="false"/>
+  <Config Name="Feeds list" Target="/app/assets/feeds_list.txt" Default="/mnt/user/appdata/feedbard/feeds_list.txt" Mode="rw" Description="Newline-separated list of RSS/Atom feed URLs. Create this file before the first start - an empty or missing file means nothing is processed." Type="Path" Display="always" Required="true" Mask="false"/>
+
+  <!-- ===================== Schedule ===================== -->
+
+  <Config Name="CRON_INTERVAL_SECONDS" Target="CRON_INTERVAL_SECONDS" Default="10800" Description="Seconds to sleep between runs. Default 10800 (3 hours)." Type="Variable" Display="always" Required="true" Mask="false">10800</Config>
+
+  <!-- ===================== Narration ===================== -->
+
+  <Config Name="TARGET_LANGUAGE" Target="TARGET_LANGUAGE" Default="Italian" Description="Language articles are translated into and narrated in. Must match a lexicon file shipped in assets/lexicons/ (english, italian), otherwise symbol pronunciation falls back to English. Pair it with a matching TTS voice." Type="Variable" Display="always" Required="true" Mask="false">Italian</Config>
+
+  <!-- ===================== LLM provider ===================== -->
+
+  <Config Name="LLM_PROVIDER" Target="LLM_PROVIDER" Default="anthropic" Description="One of: anthropic, bedrock, ollama." Type="Variable" Display="always" Required="true" Mask="false">anthropic</Config>
+  <Config Name="MODEL_ID" Target="MODEL_ID" Default="claude-sonnet-4-5-20250929" Description="Model id for the chosen provider: an Anthropic model name, a Bedrock model id / inference-profile ARN, or an Ollama tag." Type="Variable" Display="always" Required="true" Mask="false">claude-sonnet-4-5-20250929</Config>
+  <Config Name="ANTHROPIC_API_KEY" Target="ANTHROPIC_API_KEY" Default="" Description="Anthropic API key. Required only when LLM_PROVIDER=anthropic." Type="Variable" Display="always" Required="false" Mask="true"/>
+  <Config Name="OLLAMA_BASE_URL" Target="OLLAMA_BASE_URL" Default="http://localhost:11434" Description="Ollama server URL. Used only when LLM_PROVIDER=ollama - point it at your Ollama container, not localhost." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+
+  <!-- ===================== Speech ===================== -->
+
+  <Config Name="TTS_PROVIDER" Target="TTS_PROVIDER" Default="http" Description="Text-to-speech backend. One of: http, sagemaker, polly." Type="Variable" Display="always" Required="true" Mask="false">http</Config>
+  <Config Name="TTS_BASE_URL" Target="TTS_BASE_URL" Default="" Description="Base URL of the TTS service. Used when TTS_PROVIDER=http." Type="Variable" Display="always" Required="false" Mask="false"/>
+  <Config Name="SAGEMAKER_TTS_ENDPOINT_NAME" Target="SAGEMAKER_TTS_ENDPOINT_NAME" Default="" Description="SageMaker endpoint name. Used when TTS_PROVIDER=sagemaker." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="POLLY_VOICE_ID" Target="POLLY_VOICE_ID" Default="Bianca" Description="Amazon Polly voice id. Used when TTS_PROVIDER=polly. Must speak TARGET_LANGUAGE." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="POLLY_ENGINE" Target="POLLY_ENGINE" Default="generative" Description="Polly engine: standard, neural, generative, or long-form. Used when TTS_PROVIDER=polly." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+
+  <Config Name="ASR_PROVIDER" Target="ASR_PROVIDER" Default="http" Description="Speech recognition backend used to quality-check rendered audio. One of: http, sagemaker." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="ASR_BASE_URL" Target="ASR_BASE_URL" Default="" Description="Base URL of a Whisper-compatible ASR service. Used when ASR_PROVIDER=http." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="SAGEMAKER_ASR_ENDPOINT_NAME" Target="SAGEMAKER_ASR_ENDPOINT_NAME" Default="" Description="SageMaker endpoint name. Used when ASR_PROVIDER=sagemaker." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+
+  <!-- ===================== AWS (Bedrock / SageMaker / Polly) ===================== -->
+
+  <Config Name="AWS_REGION" Target="AWS_REGION" Default="us-east-1" Description="AWS region for Bedrock, SageMaker, and Polly calls." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="AWS_ACCESS_KEY_ID" Target="AWS_ACCESS_KEY_ID" Default="" Description="AWS access key. Needed when any provider above is bedrock, sagemaker, or polly." Type="Variable" Display="advanced" Required="false" Mask="true"/>
+  <Config Name="AWS_SECRET_ACCESS_KEY" Target="AWS_SECRET_ACCESS_KEY" Default="" Description="AWS secret key. Needed when any provider above is bedrock, sagemaker, or polly." Type="Variable" Display="advanced" Required="false" Mask="true"/>
+
+  <!-- ===================== Misc ===================== -->
+
+  <Config Name="FEEDS_LIST_PATH" Target="FEEDS_LIST_PATH" Default="assets/feeds_list.txt" Description="Path inside the container to the feed list. Leave as-is unless you changed the Feeds list mount." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="ONLY_FIRST_FEED" Target="ONLY_FIRST_FEED" Default="false" Description="true = process only the first feed in the list. Useful for a first test run." Type="Variable" Display="advanced" Required="false" Mask="false">false</Config>
+  <Config Name="LOG_LEVEL" Target="LOG_LEVEL" Default="INFO" Description="Log verbosity: DEBUG, INFO, WARNING, ERROR." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+
+</Container>

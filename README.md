@@ -1,32 +1,42 @@
-# Community Apps Starter Template
+# Unraid Community Applications — Theviki20110
 
-Use this repository as a GitHub template when you want a clean starting point for a new Community Apps submission repository.
+Community Apps repository for the Docker applications maintained by
+[@Theviki20110](https://github.com/Theviki20110).
 
-## Quick Start
+## Applications
 
-1. Click **Use this template** on GitHub and create your own repository.
-2. Replace the placeholder values in `ca_profile.xml`, `templates/example-app.xml`, and `plugins/example-plugin.xml`.
-3. Replace `icon.svg` with your own repository icon, or update `ca_profile.xml` to point at a hosted icon you control.
-4. Keep one XML file per Docker app under `templates/`.
-5. Keep one XML wrapper per plugin under `plugins/`.
-6. Delete the example files you do not need.
-7. Commit and push your repository.
-8. Run **Validate** and **Scan** in the Community Apps submit flow: `/submit`.
+| App | Template | Source |
+| --- | --- | --- |
+| **feedbard** | [`templates/feedbard.xml`](templates/feedbard.xml) | [Theviki20110/feedbard](https://github.com/Theviki20110/feedbard) |
 
-## Starter Files
+### feedbard
 
-- `README.md`: onboarding notes for whoever maintains the repository.
-- `LICENSE`: starter MIT license text. Replace the placeholder copyright line.
-- `.gitignore`: keeps common OS junk out of the repo.
-- `icon.svg`: starter repository icon referenced by `ca_profile.xml`.
-- `ca_profile.xml`: repository overview and support metadata shown in Community Apps.
-- `templates/example-app.xml`: starter Docker application template.
-- `plugins/example-plugin.xml`: starter plugin wrapper.
+Polls RSS/Atom feeds, turns each new post into a narrated audio episode —
+translated into your language, with figures described out loud — and publishes
+it into an Audiobookshelf **book** library, one folder per article with its own
+cover.
 
-## Submission Notes
+Headless: no WebUI. The container runs the pipeline every
+`CRON_INTERVAL_SECONDS` and writes to two paths, `/app/data` (its own state)
+and `/app/library` (the tree Audiobookshelf reads).
 
-- Keep `ca_profile.xml` in the repository root.
+**Before first start**, create the feed list file mounted at
+`/app/assets/feeds_list.txt` — one RSS/Atom URL per line. An empty or missing
+file means nothing gets processed.
+
+You supply the model backends: an LLM (Anthropic API, AWS Bedrock, or Ollama)
+and a TTS service (HTTP, SageMaker, or Amazon Polly). See the template's
+variable descriptions, and `.env.example` in the feedbard repo.
+
+## Repository Layout
+
+- `ca_profile.xml` — repository overview shown in Community Apps. Must stay in the root.
+- `templates/` — one XML file per Docker app.
+- `icon.svg` — repository icon referenced by `ca_profile.xml`.
+- `LICENSE` — MIT.
+
+## Maintenance Notes
+
 - Every Docker app entry needs a `<Repository>` tag.
-- Every plugin entry needs a `<PluginURL>` tag.
-- Keep each template's `TemplateURL` pointed at the raw GitHub URL for that exact XML file.
-- Use an OSI-approved license before submitting.
+- Keep each template's `<TemplateURL>` pointed at the raw GitHub URL for that exact XML file.
+- Run **Validate** and **Scan** in the Community Apps submit flow: `/submit`.

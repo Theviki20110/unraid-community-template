@@ -1,24 +1,26 @@
 <CommunityApplications>
-  <!-- Required profile -->
   <Profile>
-    Describe what users will find in this repository, which apps or plugins you maintain, and where they should go for support.  Markdown supported
+    Unraid Community Applications from **Theviki20110**.
+
+    ### feedbard
+
+    Polls a list of RSS/Atom feeds, turns each new post into a narrated audio
+    episode — translated into your language, with figures and charts described
+    out loud instead of skipped — and publishes it into an
+    **Audiobookshelf** book library, one folder per article with its own cover
+    art.
+
+    Headless: no WebUI. It runs the pipeline on a timer
+    (`CRON_INTERVAL_SECONDS`) and writes to two shares — one for its own state,
+    one for the library your media server reads.
+
+    LLM work runs through **Anthropic**, **AWS Bedrock**, or a local
+    **Ollama**; TTS/ASR through an HTTP service, **SageMaker**, or **Amazon
+    Polly**.
+
+    Support: open an issue at
+    https://github.com/Theviki20110/feedbard/issues
   </Profile>
-  <!-- Optional icon -->
-  <Icon>https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME/main/icon.svg</Icon>
-  <!-- Optional web page -->
-  <WebPage>https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME</WebPage>
-  <!-- Optional support and donation links -->
-  <Forum>https://forums.unraid.net/topic/YOUR_SUPPORT_TOPIC</Forum>
-  <!-- Optional Discord link -->
-  <Discord>https://discord.gg/YOUR_INVITE_CODE</Discord>
-  <!-- Optional donation link -->
-  <DonateLink>https://github.com/sponsors/YOUR_GITHUB_USERNAME</DonateLink>
-  <!-- Optional donation text -->
-  <DonateText>Support this project</DonateText>
-  <!-- Optional photos -->
-  <Photo>URL to any photos</Photo>
-  <!-- You can add multiple photos by adding multiple <Photo> tags -->
-  <!-- Optional videos -->
-  <Video>URL to any video.  Youtube URLs are recommended</Video>
-  <!-- You can add multiple videos by adding multiple <Video> tags -->
+  <Icon>https://raw.githubusercontent.com/Theviki20110/unraid-community-template/main/icon.svg</Icon>
+  <WebPage>https://github.com/Theviki20110/unraid-community-template</WebPage>
 </CommunityApplications>
