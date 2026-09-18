@@ -1,0 +1,37 @@
+name: Validate templates
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq libxml2-utils
+
+      - name: Well-formed XML
+        run: xmllint --noout ca_profile.xml templates/*.xml
+
+      - name: Required tags and matching TemplateURL
+        run: |
+          set -e
+          for f in templates/*.xml; do
+            for tag in Name Repository Icon Overview Support Project TemplateURL Category; do
+              grep -q "<$tag>" "$f" || { echo "$f: missing <$tag>"; exit 1; }
+            done
+            expected="https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/main/$f"
+            actual=$(sed -n 's:.*<TemplateURL>\(.*\)</TemplateURL>.*:\1:p' "$f")
+            [ "$actual" = "$expected" ] || { echo "$f: TemplateURL is '$actual', expected '$expected'"; exit 1; }
+          done
+
+      - name: Image referenced by templates exists and is public
+        run: |
+          set -e
+          for f in templates/*.xml; do
+            ref=$(sed -n 's:.*<Repository>\(.*\)</Repository>.*:\1:p' "$f")
+            echo "checking $ref"
+            docker manifest inspect "$ref" > /dev/null
+          done

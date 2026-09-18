@@ -1,13 +1,13 @@
 <Container version="2">
   <Name>feedbard</Name>
   <Repository>ghcr.io/theviki20110/feedbard:latest</Repository>
-  <Registry>https://ghcr.io/theviki20110/feedbard</Registry>
+  <Registry>https://github.com/Theviki20110/feedbard/pkgs/container/feedbard</Registry>
   <Network>bridge</Network>
 
   <Shell>sh</Shell>
   <Privileged>false</Privileged>
 
-  <Icon>https://raw.githubusercontent.com/Theviki20110/unraid-community-template/main/icon.svg</Icon>
+  <Icon>https://raw.githubusercontent.com/Theviki20110/unraid-community-template/main/icon.png</Icon>
 
   <!-- Headless: the pipeline runs on a timer, there is no web interface. -->
 
@@ -55,14 +55,16 @@
   </Requires>
 
   <Changes>
+### 0.1.1
+- PNG icon, registry link, drop MaxVer so newer Unraid releases still list the app.
+
 ### 0.1.0
 - Initial Unraid release.
   </Changes>
 
-  <Date>2026-08-16</Date>
+  <Date>2026-09-18</Date>
 
-  <MinVer>6.1</MinVer>
-  <MaxVer>7.3</MaxVer>
+  <MinVer>6.9.0</MinVer>
 
   <License>MIT</License>
 
