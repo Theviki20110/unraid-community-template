@@ -27,6 +27,9 @@ jobs:
             [ "$actual" = "$expected" ] || { echo "$f: TemplateURL is '$actual', expected '$expected'"; exit 1; }
           done
 
+      - name: Authenticate to GHCR for manifest checks
+        run: echo "${{ github.token }}" | docker login ghcr.io -u "${{ github.repository_owner }}" --password-stdin
+
       - name: Image referenced by templates exists and is public
         run: |
           set -e
