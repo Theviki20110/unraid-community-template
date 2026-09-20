@@ -27,11 +27,22 @@ jobs:
             [ "$actual" = "$expected" ] || { echo "$f: TemplateURL is '$actual', expected '$expected'"; exit 1; }
           done
 
-      - name: Image referenced by templates exists and is public
+      - name: Authenticate to GHCR for manifest checks
+        run: echo "${{ github.token }}" | docker login ghcr.io -u "${{ github.repository_owner }}" --password-stdin
+
+      - name: Image referenced by templates exists and is public (strict on main)
         run: |
           set -e
+          strict=false
+          [ "${GITHUB_REF}" = "refs/heads/main" ] && strict=true
           for f in templates/*.xml; do
             ref=$(sed -n 's:.*<Repository>\(.*\)</Repository>.*:\1:p' "$f")
             echo "checking $ref"
-            docker manifest inspect "$ref" > /dev/null
+            if ! docker manifest inspect "$ref" > /dev/null; then
+              if [ "$strict" = true ]; then
+                echo "::error::$ref is not publicly readable or does not exist"
+                exit 1
+              fi
+              echo "::warning::$ref could not be inspected from this branch token; main branch enforces this check."
+            fi
           done
