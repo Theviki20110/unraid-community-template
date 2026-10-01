@@ -51,9 +51,14 @@ Unraid pulls everything from public URLs, so three things must be public:
 
 Then either:
 
-- **Install directly (no CA listing needed):** on Unraid, *Docker* tab → *Template Repositories* (bottom of the page)
-  → paste `https://github.com/Theviki20110/unraid-community-template` → *Save*. The template then shows up under
-  *Add Container* → *Template* → *User templates*, and the app appears in *Apps* if the CA plugin is installed.
+- **Install directly (no CA listing needed):** current Unraid releases no longer have a *Template Repositories*
+  field, so drop the XML into the user-templates folder on the flash drive. From the Unraid terminal:
+
+  ```bash
+  wget -O /boot/config/plugins/dockerMan/templates-user/my-feedbard.xml https://raw.githubusercontent.com/Theviki20110/unraid-community-template/main/templates/feedbard.xml
+  ```
+
+  Then *Docker* tab → *Add Container* → *Template* dropdown → `feedbard` under *User templates*.
 - **Get listed in Community Applications:** open a thread in the Unraid forum under *Docker Containers*
   (one thread per app, this is the support link), then submit the repository URL in the CA application
   form: https://forums.unraid.net/topic/87144-ca-application-policies-notes/ and wait for the moderator scan.
